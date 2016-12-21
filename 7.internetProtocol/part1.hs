@@ -1,6 +1,5 @@
 import Text.Regex.PCRE
 import Data.List.Extra
-import Data.Ord
 
 type Address = ([String], [String])
 
@@ -11,10 +10,10 @@ main = do
     print $ length ls
 
 parseLine :: String -> Address
-parseLine str = (first, hyperNets)
-    where hyperNets = getAllTextMatches (str =~ "(?<=\\[)[a-z]+(?=\\])" :: AllTextMatches [] String)
-          first = head splitOnFirstBracket
-          [hypernet, final] = splitOn "]" $ last splitOnFirstBracket
+parseLine str = (firstAndLastPart ++ allOtherParts, hypernets)
+    where hypernets = getAllTextMatches (str =~ "(?<=\\[)[a-z]+(?=\\])" :: AllTextMatches [] String)
+          firstAndLastPart = [head $ splitOn "[" str, last $ splitOn "]" str]
+          allOtherParts = map (replace "]" "" . replace "[" "") $ getAllTextMatches (str =~ "[\\]]{1}[a-z]+[\\[]{1}" :: AllTextMatches [] String)
 
 containsABBA :: String -> Bool
 containsABBA str@(a : b : c : d : _)
@@ -23,4 +22,4 @@ containsABBA str@(a : b : c : d : _)
     | otherwise = containsABBA $ tail str
 
 supportsTLS :: Address -> Bool
-supportsTLS (first, hypernet, final) = (containsABBA first || containsABBA final) && (not . containsABBA) hypernet
+supportsTLS (parts, hypernets) = any containsABBA parts && not (any containsABBA hypernets)
