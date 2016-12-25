@@ -8,8 +8,11 @@ main = do
 
 processLine :: Int -> String -> Int
 processLine count [] = count
-processLine count ('(' : xs) = processLine (count + (chars * repeats)) rest
-    where chars = read $ takeWhile (/= 'x') xs
-          repeats = read $ takeWhile (/= ')') $ splitOn "x" xs !! 1
-          rest = drop (4 + chars) xs
+processLine count ('(' : xs) = processLine (count + (charsParsed * repeatsParsed)) rest
+    where chars = takeWhile (/= 'x') xs
+          charsParsed = read chars
+          repeats = takeWhile (/= ')') $ splitOn "x" xs !! 1
+          repeatsParsed = read repeats
+          instructionLength = length chars + length repeats + 2
+          rest = drop (instructionLength + charsParsed) xs
 processLine count (_ : xs) = processLine (count + 1) xs
